@@ -15,7 +15,7 @@
   --blue:#0000F0;--pink:#F050A0;--white:#e0e0e0;
   --dim:#555577;
 }
-body{font-family:'Press Start 2P',monospace;background:var(--bg);color:var(--white);max-width:900px;margin:0 auto;min-height:100vh;font-size:10px;-webkit-tap-highlight-color:transparent}
+body{font-family:'Press Start 2P',monospace;background:var(--bg);color:var(--white);max-width:900px;margin:0 auto;min-height:100vh;font-size:12px;-webkit-tap-highlight-color:transparent}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:999}
 
 .header{padding:16px 16px 12px;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:3px solid var(--border)}
@@ -49,9 +49,9 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .ev-card:active{transform:scale(.98)}
 .ev-card .ev-em{font-size:18px;flex-shrink:0;font-family:sans-serif}
 .ev-card .ev-info{flex:1;min-width:0}
-.ev-card .ev-title{font-size:9px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ev-card .ev-time{font-size:7px;color:var(--dim);margin-top:3px}
-.ev-card .ev-tag{padding:3px 8px;font-family:inherit;font-size:7px;border:1px solid;white-space:nowrap;flex-shrink:0}
+.ev-card .ev-title{font-size:11px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-card .ev-time{font-size:9px;color:var(--dim);margin-top:3px}
+.ev-card .ev-tag{padding:3px 8px;font-family:inherit;font-size:8px;border:1px solid;white-space:nowrap;flex-shrink:0}
 
 .ev-detail{background:#0d1117;border:2px solid var(--border);border-top:none;padding:10px 12px;margin-top:-8px;margin-bottom:6px;font-size:8px;line-height:1.8;color:var(--dim)}
 .ev-detail b{color:var(--cyan)}
@@ -90,12 +90,12 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .duties-week-nav span{font-size:9px}
 .duty-grid{display:grid;grid-template-columns:1fr;gap:6px}
 .duty-day{background:var(--card);border:2px solid var(--border);padding:10px}
-.duty-day-hdr{font-size:8px;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.duty-day-hdr{font-size:10px;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px}
 .duty-day-hdr .dd-today{background:var(--green);color:#000;font-size:6px;padding:2px 6px}
 .duty-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #222244}
 .duty-row:last-child{border-bottom:none}
-.duty-name{flex:1;font-size:7px;color:var(--white)}
-.duty-btn{border:2px solid var(--border);background:var(--card);color:var(--dim);font-family:inherit;font-size:7px;padding:4px 8px;cursor:pointer;transition:all .1s;min-width:50px;text-align:center}
+.duty-name{flex:1;font-size:10px;color:var(--white)}
+.duty-btn{border:2px solid var(--border);background:var(--card);color:var(--dim);font-family:inherit;font-size:9px;padding:6px 12px;cursor:pointer;transition:all .1s;min-width:60px;text-align:center}
 .duty-btn:hover{border-color:var(--cyan)}
 .duty-btn.andy{border-color:var(--green);color:var(--green);background:rgba(0,240,0,.08);text-shadow:0 0 6px rgba(0,240,0,.3)}
 .duty-btn.julia{border-color:var(--pink);color:var(--pink);background:rgba(240,80,160,.08);text-shadow:0 0 6px rgba(240,80,160,.3)}
@@ -115,9 +115,9 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .offline-banner{background:#331100;border:2px solid var(--orange);padding:8px;font-size:7px;color:var(--orange);text-align:center;margin-bottom:8px}
 
 @media(max-width:600px){
-  body{font-size:9px}
-  .title{font-size:13px}
-  .sum-card .num{font-size:16px}
+  body{font-size:11px}
+  .title{font-size:14px}
+  .sum-card .num{font-size:18px}
   .av-btn{padding:4px 6px;min-width:44px}
   .av-btn .av-em{font-size:16px}
 }
