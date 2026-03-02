@@ -185,11 +185,8 @@ function fetchDuties(cb){
 function saveDuty(day,duty,owner,btnEl){
   var wk=getWeekStr(dutyWeekOff);
   if(btnEl)btnEl.classList.add('saving');
-  fetch(API_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({action:'setDuty',week:wk,day:day,duty:duty,owner:owner})
-  }).then(function(r){return r.json()}).then(function(){
+  var url=API_URL+'?action=setDuty&week='+encodeURIComponent(wk)+'&day='+encodeURIComponent(day)+'&duty='+encodeURIComponent(duty)+'&owner='+encodeURIComponent(owner);
+  fetch(url).then(function(r){return r.json()}).then(function(){
     // Update local state
     if(!duties.assignments)duties.assignments={};
     if(!duties.assignments[day])duties.assignments[day]={};
