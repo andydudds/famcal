@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏠Family Calendar</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#0F172A;max-width:540px;margin:0 auto;min-height:100vh}
+select{-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='8' height='5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%2394A3B8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:24px!important}
+button{font-family:inherit}
+.header{padding:16px 20px 10px;position:sticky;top:0;background:#fff;z-index:10;border-bottom:1px solid #F1F5F9}
+.toggle{display:flex;background:#F1F5F9;border-radius:10px;padding:3px;margin-bottom:10px}
+.toggle button{flex:1;padding:7px 0;border-radius:8px;border:none;cursor:pointer;font-weight:600;font-size:13px;text-transform:capitalize;background:transparent;color:#94A3B8;transition:all .15s}
+.toggle button.on{background:#fff;color:#0F172A;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.filters{display:flex;gap:6px}
+.filters select{flex:1;padding:6px 10px;border-radius:8px;border:1px solid #E2E8F0;font-size:12px;font-weight:500;color:#475569;background:#FAFBFC;font-family:inherit}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin:4px 0 8px;padding:0 4px}
+.nav-row span{font-weight:700;font-size:14px}
+.nav-btn{background:none;border:none;cursor:pointer;font-size:20px;color:#94A3B8;padding:2px 10px}
+.day-row{display:flex;gap:10px;padding:8px;margin-bottom:2px;border-radius:8px;cursor:pointer;border:1.5px solid transparent;transition:all .1s}
+.day-row:hover{background:#F8FAFC}
+.day-row.sel{background:#EFF6FF;border-color:#93C5FD}
+.day-row.nosch{background:#FFFBEB}
+.day-row.comp{background:#FFF1F2}
+.day-col{width:40px;flex-shrink:0;text-align:center;padding-top:2px}
+.day-col .dow{font-size:10px;font-weight:600;text-transform:uppercase}
+.day-col .num{font-size:18px;font-weight:500;line-height:24px}
+.day-col .num.today{font-weight:700;color:#2563EB}
+.day-col .num.nosch{color:#EA580C}
+.day-col .num.comp{color:#BE123C}
+.day-col .dot{width:5px;height:5px;border-radius:99px;background:#2563EB;margin:2px auto 0}
+.pills{flex:1;display:flex;flex-wrap:wrap;gap:3px;align-items:flex-start;align-content:flex-start;min-height:30px}
+.chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px 2px 6px;border-radius:6px;font-size:11px;font-weight:500;line-height:18px;white-space:nowrap}
+.chip .wd{width:6px;height:6px;border-radius:99px;flex-shrink:0}
+.empty{font-size:11px;color:#E2E8F0;line-height:24px}
+.detail{margin:10px 16px 0;padding:14px;background:#F8FAFC;border-radius:10px;border:1px solid #E2E8F0}
+.detail-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.detail-hdr span{font-size:13px;font-weight:700;color:#334155}
+.detail-hdr button{background:none;border:none;cursor:pointer;font-size:16px;color:#CBD5E1}
+.row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F8FAFC}
+.row .bar{width:3px;height:22px;border-radius:2px;flex-shrink:0}
+.row .info{flex:1;min-width:0}
+.row .name{font-size:13px;font-weight:500;color:#1E293B;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{font-size:10px;color:#94A3B8;margin-top:1px}
+.row .tags{display:flex;gap:3px;flex-shrink:0}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600;line-height:17px;white-space:nowrap}
+.week-day-hdr{font-size:11px;font-weight:700;padding:10px 0 2px;display:flex;align-items:center;gap:6px}
+.today-badge{background:#2563EB;color:#fff;font-size:9px;padding:1px 6px;border-radius:4px}
+.list-date{position:sticky;top:116px;background:#fff;z-index:2;font-size:11px;font-weight:700;padding:10px 0 3px;border-bottom:1px solid #F1F5F9;display:flex;align-items:center;gap:6px}
+.pattern{margin-top:18px;padding:14px;background:#F8FAFC;border-radius:10px;border:1px solid #F1F5F9}
+.pattern h3{font-size:12px;font-weight:700;color:#334155;margin-bottom:8px}
+.pattern .pr{display:flex;gap:8px;margin-bottom:3px;font-size:11px}
+.pattern .pr b{width:28px;font-weight:700;color:#64748B;flex-shrink:0}
+.pattern .pr span{color:#94A3B8}
+.missing{margin-top:8px;padding:10px;background:#FFFBEB;border-radius:8px;font-size:10px;color:#92400E;border:1px solid #FDE68A}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const E=[
+// ── Mar 3 week ──
+{"s":"Debate","t":"2026-03-03T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-03-03T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-03-03T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-03-04T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-03-04T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"Video Game Class","t":"2026-03-04T15:00","e":"17:00","p":"d","c":"af"},
+{"s":"Wicked (Julia + Kids)","t":"2026-03-04T19:00","e":"21:00","p":"f","c":"fm"},
+{"s":"Half Day – PT Conf (Elem)","t":"2026-03-05","p":"f","c":"do","a":1},
+{"s":"All That Jazz","t":"2026-03-05T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-03-05T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-03-06T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-03-07T09:30","e":"12:00","p":"b","c":"ch"},
+{"s":"🎂 Dylan → Lourenzo's Bday","t":"2026-03-07T14:00","e":"18:00","p":"d","c":"fm"},
+{"s":"🎂 Ella → Leila's Bday","t":"2026-03-07T17:30","e":"20:00","p":"e","c":"fm"},
+{"s":"⭐ Twist & Flip Comp","t":"2026-03-08T07:45","e":"12:00","p":"e","c":"co","loc":"Brentwood"},
+// ── Mar 10 week ──
+{"s":"Debate","t":"2026-03-10T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-03-10T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-03-10T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-03-11T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-03-11T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"Video Game Class","t":"2026-03-11T15:00","e":"17:00","p":"d","c":"af"},
+{"s":"Half Day – PT Conf (Middle)","t":"2026-03-12","p":"f","c":"do","a":1},
+{"s":"All That Jazz","t":"2026-03-12T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-03-12T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"⭐ Heartland Classic","t":"2026-03-13","p":"e","c":"co","a":1,"loc":"Brentwood"},
+{"s":"Hip Hop","t":"2026-03-13T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-03-14T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Mar 17 week ──
+{"s":"Debate","t":"2026-03-17T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-03-17T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"PT Conf – HS (Evening)","t":"2026-03-18","p":"f","c":"do","a":1},
+{"s":"Study Time","t":"2026-03-18T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-03-18T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"Half Day – PT Conf (HS)","t":"2026-03-19","p":"f","c":"do","a":1},
+{"s":"All That Jazz","t":"2026-03-19T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-03-19T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Eid al-Fitr – No School","t":"2026-03-20","p":"f","c":"do","a":1},
+{"s":"Hip Hop","t":"2026-03-20T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-03-21T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Mar 24 week ──
+{"s":"Debate","t":"2026-03-24T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-03-24T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-03-24T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-03-25T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-03-25T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-03-26T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-03-26T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-03-27T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-03-28T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Mar 31 week ──
+{"s":"Debate","t":"2026-03-31T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-03-31T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-03-31T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-04-01T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-04-01T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"Spring Recess – No School","t":"2026-04-02","te":"2026-04-11","p":"f","c":"do","a":1},
+{"s":"All That Jazz","t":"2026-04-02T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-04-02T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-04-03T14:40","e":"16:20","p":"e","c":"da"},
+// ── Apr 7 week ──
+{"s":"Debate","t":"2026-04-07T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-04-07T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-04-07T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-04-08T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-04-08T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-04-09T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-04-09T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-04-10T14:40","e":"16:20","p":"e","c":"da"},
+// ── Apr 14 week ──
+{"s":"Debate","t":"2026-04-14T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-04-14T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-04-14T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-04-15T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-04-15T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-04-16T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-04-16T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-04-17T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"⭐ Season Finals","t":"2026-04-18","p":"e","c":"co","a":1,"loc":"Medford"},
+{"s":"Chinese School","t":"2026-04-18T09:30","e":"12:00","p":"b","c":"ch"},
+{"s":"Andy → Chicago","t":"2026-04-20T16:35","e":"19:31","p":"a","c":"tr"},
+// ── Apr 21 week ──
+{"s":"Debate","t":"2026-04-21T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-04-21T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-04-21T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-04-22T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-04-22T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-04-23T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-04-23T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"⭐ NYS Championship","t":"2026-04-24","p":"e","c":"co","a":1,"loc":"Brentwood"},
+{"s":"Hip Hop","t":"2026-04-24T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Andy → NYC","t":"2026-04-24T18:50","e":"20:57","p":"a","c":"tr"},
+{"s":"Chinese School","t":"2026-04-25T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Apr 28 week ──
+{"s":"Debate","t":"2026-04-28T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-04-28T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-04-28T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-04-29T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-04-29T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-04-30T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-04-30T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-05-01T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-05-02T09:30","e":"12:00","p":"b","c":"ch"},
+// ── May 5 week ──
+{"s":"Debate","t":"2026-05-05T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-05-05T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-05-05T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"PT Conf – Middle (Evening)","t":"2026-05-06","p":"f","c":"do","a":1},
+{"s":"Study Time","t":"2026-05-06T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-05-06T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"PT Conf – Elementary (Evening)","t":"2026-05-07","p":"f","c":"do","a":1},
+{"s":"All That Jazz","t":"2026-05-07T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-05-07T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-05-08T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-05-09T09:30","e":"12:00","p":"b","c":"ch"},
+// ── May 12 week ──
+{"s":"Debate","t":"2026-05-12T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-05-12T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Swimming","t":"2026-05-12T17:45","e":"19:15","p":"d","c":"sw"},
+{"s":"Study Time","t":"2026-05-13T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-05-13T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-05-14T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-05-14T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-05-15T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-05-16T09:30","e":"12:00","p":"b","c":"ch"},
+// ── May 19 week ──
+{"s":"Debate","t":"2026-05-19T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-05-19T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"PT Conf – HS (Evening)","t":"2026-05-20","p":"f","c":"do","a":1},
+{"s":"Study Time","t":"2026-05-20T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-05-20T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-05-21T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-05-21T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-05-22T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-05-23T09:30","e":"12:00","p":"b","c":"ch"},
+{"s":"Memorial Day – No School","t":"2026-05-25","p":"f","c":"do","a":1},
+// ── May 26 week ──
+{"s":"Debate","t":"2026-05-26T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-05-26T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Eid al-Adha – No School","t":"2026-05-27","p":"f","c":"do","a":1},
+{"s":"Study Time","t":"2026-05-27T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-05-27T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-05-28T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-05-28T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-05-29T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-05-30T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Jun 2 week ──
+{"s":"Debate","t":"2026-06-02T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-06-02T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Study Time","t":"2026-06-03T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-06-03T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"No School – Anniversary","t":"2026-06-04","p":"f","c":"do","a":1},
+{"s":"All That Jazz","t":"2026-06-04T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-06-04T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"No School – Clerical","t":"2026-06-05","p":"f","c":"do","a":1},
+{"s":"Hip Hop","t":"2026-06-05T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-06-06T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Jun 9 week ──
+{"s":"Debate","t":"2026-06-09T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-06-09T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Study Time","t":"2026-06-10T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-06-10T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-06-11T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-06-11T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Hip Hop","t":"2026-06-12T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Andy → Anchorage","t":"2026-06-13T08:40","e":"17:33","p":"a","c":"tr"},
+{"s":"Chinese School","t":"2026-06-13T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Jun 16 week ──
+{"s":"Debate","t":"2026-06-16T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-06-16T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Study Time","t":"2026-06-17T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-06-17T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-06-18T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-06-18T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Juneteenth – No School","t":"2026-06-19","p":"f","c":"do","a":1},
+{"s":"Hip Hop","t":"2026-06-19T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Andy → NYC","t":"2026-06-20T00:20","e":"07:35","p":"a","c":"tr"},
+{"s":"Chinese School","t":"2026-06-20T09:30","e":"12:00","p":"b","c":"ch"},
+// ── Jun 23 week ──
+{"s":"Debate","t":"2026-06-23T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Gymnastics","t":"2026-06-23T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"Study Time","t":"2026-06-24T14:40","e":"16:20","p":"e","c":"af"},
+{"s":"Ballet","t":"2026-06-24T16:20","e":"17:40","p":"e","c":"da"},
+{"s":"All That Jazz","t":"2026-06-25T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Gymnastics","t":"2026-06-25T16:40","e":"19:05","p":"e","c":"gy"},
+{"s":"🎓 Last Day of School","t":"2026-06-26","p":"f","c":"do","a":1},
+{"s":"Hip Hop","t":"2026-06-26T14:40","e":"16:20","p":"e","c":"da"},
+{"s":"Chinese School","t":"2026-06-27T09:30","e":"12:00","p":"b","c":"ch"},
+{"s":"⭐ World Championship","t":"2026-06-30","p":"e","c":"co","a":1},
+{"s":"Gymnastics","t":"2026-06-30T16:40","e":"19:05","p":"e","c":"gy"}
+];
+
+const WH={e:{bg:"#FCE7F3",fg:"#BE185D",l:"Ella"},d:{bg:"#DBEAFE",fg:"#1E40AF",l:"Dylan"},b:{bg:"#FEF3C7",fg:"#92400E",l:"Both"},f:{bg:"#EDE9FE",fg:"#5B21B6",l:"Family"},a:{bg:"#D1FAE5",fg:"#065F46",l:"Andy"}};
+const CT={gy:{bg:"#F5F3FF",fg:"#7C3AED",l:"Gym"},da:{bg:"#FDF2F8",fg:"#DB2777",l:"Dance"},sw:{bg:"#EFF6FF",fg:"#2563EB",l:"Swim"},ch:{bg:"#FEF2F2",fg:"#DC2626",l:"Chinese"},af:{bg:"#FFFBEB",fg:"#D97706",l:"School"},co:{bg:"#FFF1F2",fg:"#BE123C",l:"Comp"},do:{bg:"#FFF7ED",fg:"#C2410C",l:"DOE"},tr:{bg:"#ECFEFF",fg:"#0E7490",l:"Travel"},fm:{bg:"#F5F3FF",fg:"#6D28D9",l:"Family"}};
+const DWS=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],MS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function pd(s){if(!s)return new Date();return s.length===10?new Date(s+"T00:00:00"):new Date(s)}
+function sd(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function ft(s){if(!s||!s.includes(":"))return"";const p=s.split(":");const h=parseInt(p[0]),m=parseInt(p[1]);return(h%12||12)+":"+m.toString().padStart(2,"0")+(h>=12?"p":"a")}
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function forDate(date,list){
+  return list.filter(ev=>{
+    const d=pd(ev.t);
+    if(ev.a){
+      const st=new Date(d.getFullYear(),d.getMonth(),d.getDate());
+      const en=ev.te?new Date(pd(ev.te).getFullYear(),pd(ev.te).getMonth(),pd(ev.te).getDate()):new Date(st.getTime()+864e5);
+      const dd=new Date(date.getFullYear(),date.getMonth(),date.getDate());
+      return dd>=st&&dd<en;
+    }
+    return sd(d,date);
+  }).sort((a,b)=>{if(a.a&&!b.a)return-1;if(!a.a&&b.a)return 1;return pd(a.t)-pd(b.t)});
+}
+
+let view="month",who="all",what="all",off=0,sel=null;
+const NOW=new Date();
+
+function filtered(){return E.filter(ev=>{if(who!=="all"&&ev.p!==who)return false;if(what!=="all"&&ev.c!==what)return false;return true})}
+
+function chip(ev){
+  const w=WH[ev.p]||WH.f,t=CT[ev.c]||CT.af;
+  return'<span class="chip" style="background:'+t.bg+';color:'+t.fg+'"><span class="wd" style="background:'+w.fg+'"></span>'+esc(ev.s)+'</span>';
+}
+
+function row(ev){
+  const w=WH[ev.p]||WH.f,t=CT[ev.c]||CT.af;
+  const time=ev.a?"All day":(ev.e&&ev.e.includes(":")?ft(ev.t.slice(11))+"\u2013"+ft(ev.e):"");
+  const loc=ev.loc?" \u00b7 "+esc(ev.loc):"";
+  return'<div class="row"><div class="bar" style="background:'+t.fg+'"></div><div class="info"><div class="name">'+esc(ev.s)+'</div><div class="meta">'+time+loc+'</div></div><div class="tags"><span class="pill" style="background:'+w.bg+';color:'+w.fg+'">'+w.l+'</span><span class="pill" style="background:'+t.bg+';color:'+t.fg+'">'+t.l+'</span></div></div>';
+}
+
+function render(){
+  const f=filtered();
+  let h='<div class="header"><div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:3px;color:#CBD5E1">Duddleston</div><div style="font-size:20px;font-weight:700;margin-bottom:12px">Family Calendar</div><div class="toggle"><button class="'+(view==="month"?"on":"")+'" onclick="V(\'month\')">Month</button><button class="'+(view==="week"?"on":"")+'" onclick="V(\'week\')">Week</button><button class="'+(view==="list"?"on":"")+'" onclick="V(\'list\')">List</button></div><div class="filters"><select onchange="W(this.value)"><option value="all"'+(who==="all"?" selected":"")+'>Everyone</option><option value="e"'+(who==="e"?" selected":"")+'>Ella</option><option value="d"'+(who==="d"?" selected":"")+'>Dylan</option><option value="b"'+(who==="b"?" selected":"")+'>Both Kids</option><option value="f"'+(who==="f"?" selected":"")+'>Family</option><option value="a"'+(who==="a"?" selected":"")+'>Andy</option></select><select onchange="X(this.value)"><option value="all"'+(what==="all"?" selected":"")+'>All types</option><option value="gy"'+(what==="gy"?" selected":"")+'>Gymnastics</option><option value="da"'+(what==="da"?" selected":"")+'>Dance</option><option value="sw"'+(what==="sw"?" selected":"")+'>Swim</option><option value="ch"'+(what==="ch"?" selected":"")+'>Chinese</option><option value="af"'+(what==="af"?" selected":"")+'>After School</option><option value="co"'+(what==="co"?" selected":"")+'>Competition</option><option value="do"'+(what==="do"?" selected":"")+'>DOE</option><option value="tr"'+(what==="tr"?" selected":"")+'>Travel</option><option value="fm"'+(what==="fm"?" selected":"")+'>Family</option></select></div></div>';
+
+  if(view==="month"){
+    const start=new Date(NOW);start.setDate(start.getDate()-start.getDay()+off*14);
+    const days=[];for(let i=0;i<14;i++){const d=new Date(start);d.setDate(d.getDate()+i);days.push(d)}
+    const last=days[13];
+    h+='<div style="padding:8px 16px 24px"><div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u2039</button><span>'+MS[start.getMonth()]+' '+start.getDate()+' \u2013 '+MS[last.getMonth()]+' '+last.getDate()+', '+last.getFullYear()+'</span><button class="nav-btn" onclick="N(1)">\u203a</button></div>';
+    days.forEach(function(day){
+      const evts=forDate(day,f);const isNow=sd(day,NOW);
+      const noSch=evts.some(function(e){return e.c==="do"&&(e.s.includes("No School")||e.s.includes("Recess"))});
+      const comp=evts.some(function(e){return e.c==="co"});
+      const isSel=sel&&sd(day,new Date(sel));const isWknd=day.getDay()===0||day.getDay()===6;
+      const cls=["day-row"];if(isSel)cls.push("sel");else if(noSch)cls.push("nosch");else if(comp)cls.push("comp");
+      const nc=isNow?"today":noSch?"nosch":comp?"comp":"";
+      h+='<div class="'+cls.join(" ")+'" onclick="S('+day.getTime()+')"><div class="day-col"><div class="dow" style="color:'+(isWknd?"#CBD5E1":"#94A3B8")+'">'+DWS[day.getDay()]+'</div><div class="num '+nc+'">'+day.getDate()+'</div>'+(isNow?'<div class="dot"></div>':"")+'</div><div class="pills">'+(evts.length===0?'<span class="empty">\u2014</span>':"")+evts.map(chip).join("")+'</div></div>';
+    });
+    if(sel){var sd2=new Date(sel);var se=forDate(sd2,f);if(se.length>0){var lb=sd2.toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});h+='<div class="detail"><div class="detail-hdr"><span>'+lb+'</span><button onclick="C()">\u2715</button></div>'+se.map(row).join("")+'</div>'}}
+    h+='</div>';
+  }
+
+  if(view==="week"){
+    const start=new Date(NOW);start.setDate(start.getDate()-start.getDay()+off*7);
+    const days=[];for(let i=0;i<7;i++){const d=new Date(start);d.setDate(d.getDate()+i);days.push(d)}
+    h+='<div style="padding:8px 20px 24px"><div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u2039</button><span>'+MS[start.getMonth()]+' '+start.getDate()+' \u2013 '+MS[days[6].getMonth()]+' '+days[6].getDate()+'</span><button class="nav-btn" onclick="N(1)">\u203a</button></div>';
+    days.forEach(function(day){
+      const evts=forDate(day,f);const isNow=sd(day,NOW);
+      h+='<div><div class="week-day-hdr" style="color:'+(isNow?"#2563EB":"#94A3B8")+'">'+(isNow?'<span class="today-badge">TODAY</span>':"")+DWS[day.getDay()]+' '+MS[day.getMonth()]+' '+day.getDate()+(evts.length>0?' <span style="color:#CBD5E1;font-weight:400">\u00b7 '+evts.length+'</span>':"")+'</div>'+(evts.length===0?'<div style="font-size:11px;color:#E2E8F0;padding:4px 0">\u2014</div>':"")+evts.map(row).join("")+'</div>';
+    });
+    h+='</div>';
+  }
+
+  if(view==="list"){
+    const groups={};f.filter(function(ev){return pd(ev.t)>=NOW}).sort(function(a,b){return pd(a.t)-pd(b.t)}).forEach(function(ev){const d=pd(ev.t);const k=d.toISOString().slice(0,10);if(!groups[k])groups[k]={date:d,events:[]};groups[k].events.push(ev)});
+    const gl=Object.values(groups);const total=f.filter(function(ev){return pd(ev.t)>=NOW}).length;
+    h+='<div style="padding:8px 20px 24px"><div style="font-size:11px;color:#94A3B8;margin-bottom:8px">'+total+' events \u00b7 Mar\u2013Jun 2026</div>';
+    gl.forEach(function(g){const d=g.date;const isNow=sd(d,NOW);const lb=d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+      h+='<div><div class="list-date" style="color:'+(isNow?"#2563EB":"#64748B")+'">'+(isNow?'<span class="today-badge">TODAY</span>':"")+lb+' <span style="font-weight:400;color:#CBD5E1">'+g.events.length+'</span></div>'+g.events.map(row).join("")+'</div>';
+    });
+    h+='<div class="pattern"><h3>Weekly Pattern</h3><div class="pr"><b>Tue</b><span>Debate 2:40\u20134:20</span></div><div class="pr"><b>Wed</b><span>Study Time 2:40\u20134:20 \u00b7 Ballet 4:20\u20135:40</span></div><div class="pr"><b>Thu</b><span>All That Jazz 2:40\u20134:20</span></div><div class="pr"><b>Fri</b><span>Hip Hop 2:40\u20134:20</span></div><div class="pr"><b>Sat</b><span>Chinese School 9:30\u201312 (both kids)</span></div><div class="pr"><b>Mon</b><span>Gym 4:40\u20137:05 \u00b7 Swim 5:45 (Dylan, bi-wk)</span></div><div class="pr"><b>MW</b><span>Gym 4:40\u20137:05</span></div></div>';
+    h+='<div class="missing"><b>Missing:</b> TKD belt tests \u00b7 Discovery Programs gym dates \u00b7 Columbia swim meets</div></div>';
+  }
+
+  document.getElementById("app").innerHTML=h;
+}
+
+window.V=function(v){view=v;off=0;sel=null;render()};
+window.W=function(v){who=v;render()};
+window.X=function(v){what=v;render()};
+window.N=function(d){off+=d;sel=null;render()};
+window.S=function(ts){sel=sel===ts?null:ts;render()};
+window.C=function(){sel=null;render()};
+
+render();
+</script>
+</body>
+</html>
