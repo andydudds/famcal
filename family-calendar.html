@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🏠 FAM CAL</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0a;--card:#1a1a2e;--border:#333355;
+  --cyan:#00F0F0;--yellow:#F0F000;--purple:#A000F0;
+  --green:#00F000;--red:#F00000;--orange:#F0A000;
+  --blue:#0000F0;--pink:#F050A0;--white:#e0e0e0;
+  --dim:#555577;
+}
+body{font-family:'Press Start 2P',monospace;background:var(--bg);color:var(--white);max-width:900px;margin:0 auto;min-height:100vh;font-size:14px;-webkit-tap-highlight-color:transparent}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:999}
+
+.header{padding:16px 16px 12px;position:sticky;top:0;background:var(--bg);z-index:10;border-bottom:3px solid var(--border)}
+.brand{font-size:9px;color:var(--cyan);letter-spacing:4px;text-shadow:0 0 10px var(--cyan)}
+.title{font-size:18px;color:var(--yellow);margin:4px 0 12px;text-shadow:0 0 20px rgba(240,240,0,.3)}
+
+.summary{display:flex;gap:8px;margin-bottom:12px}
+.sum-card{flex:1;background:var(--card);border:2px solid var(--border);padding:10px}
+.sum-card .num{font-size:20px;line-height:1.2}
+.sum-card .lab{font-size:9px;color:var(--dim);margin-top:4px}
+
+.avatar-bar{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.av-btn{display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid var(--border);background:var(--card);padding:8px 10px;cursor:pointer;transition:all .1s;min-width:58px}
+.av-btn.on{border-color:var(--cyan);background:#16213e;box-shadow:0 0 10px rgba(0,240,240,.2)}
+.av-btn .av-em{font-size:28px;line-height:1;font-family:sans-serif}
+.av-btn .av-name{font-size:10px;color:var(--dim)}
+.av-btn.on .av-name{color:var(--cyan)}
+
+.toggle{display:flex;border:2px solid var(--border);margin-bottom:10px}
+.toggle button{flex:1;padding:10px 0;border:none;cursor:pointer;font-family:inherit;font-size:10px;background:var(--card);color:var(--dim);transition:all .1s;border-right:2px solid var(--border)}
+.toggle button:last-child{border-right:none}
+.toggle button.on{background:var(--purple);color:#fff;text-shadow:0 0 8px rgba(160,0,240,.5)}
+
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin:4px 0 12px}
+.nav-row span{font-size:11px;color:var(--white)}
+.nav-btn{background:var(--card);border:2px solid var(--border);color:var(--cyan);font-family:inherit;font-size:14px;padding:4px 12px;cursor:pointer}
+.nav-btn:hover{border-color:var(--cyan)}
+
+.ev-card{background:var(--card);border:2px solid var(--border);padding:10px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .1s;border-left:4px solid var(--dim)}
+.ev-card:hover{border-color:var(--cyan)}
+.ev-card:active{transform:scale(.98)}
+.ev-card .ev-em{font-size:18px;flex-shrink:0;font-family:sans-serif}
+.ev-card .ev-info{flex:1;min-width:0}
+.ev-card .ev-title{font-size:13px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev-card .ev-time{font-size:11px;color:var(--dim);margin-top:3px}
+.ev-card .ev-tag{padding:4px 10px;font-family:inherit;font-size:10px;border:1px solid;white-space:nowrap;flex-shrink:0}
+
+.ev-detail{background:#0d1117;border:2px solid var(--border);border-top:none;padding:10px 12px;margin-top:-8px;margin-bottom:6px;font-size:10px;line-height:1.8;color:var(--dim)}
+.ev-detail b{color:var(--cyan)}
+
+.noschool-banner{background:#332200;border:2px solid var(--orange);padding:8px 12px;margin-bottom:6px;font-size:10px;color:var(--orange);text-shadow:0 0 8px rgba(240,160,0,.3)}
+.today-badge{background:var(--green);color:#000;font-size:7px;padding:2px 8px;display:inline-block;text-shadow:none}
+
+.m-day{display:flex;gap:10px;padding:8px 6px;margin-bottom:2px;cursor:pointer;border:2px solid transparent;transition:all .1s}
+.m-day:hover{border-color:var(--border)}
+.m-day.sel{border-color:var(--cyan);background:#16213e;box-shadow:0 0 12px rgba(0,240,240,.1)}
+.m-day.nosch{background:rgba(240,160,0,.05);border-color:rgba(240,160,0,.2)}
+.m-day.comp{background:rgba(240,80,160,.05);border-color:rgba(240,80,160,.2)}
+.m-day .m-date{width:44px;flex-shrink:0;text-align:center}
+.m-day .m-dow{font-size:7px;color:var(--dim)}
+.m-day .m-num{font-size:16px;line-height:22px;color:var(--white)}
+.m-day .m-num.today{color:var(--green);text-shadow:0 0 10px rgba(0,240,0,.4)}
+.m-day .m-num.nosch{color:var(--orange);text-shadow:0 0 10px rgba(240,160,0,.4)}
+.m-day .m-num.comp{color:var(--pink);text-shadow:0 0 10px rgba(240,80,160,.4)}
+.m-day .m-dots{width:4px;height:4px;background:var(--green);margin:2px auto 0;box-shadow:0 0 6px var(--green)}
+.m-day .m-pills{flex:1;display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start;min-height:24px}
+.m-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;font-size:9px;font-family:inherit;border:1px solid;white-space:nowrap}
+.m-chip .mc-em{font-size:10px;font-family:sans-serif}
+.m-empty{font-size:7px;color:#333;line-height:24px}
+
+.detail{margin:8px 0 12px;padding:12px;background:var(--card);border:2px solid var(--cyan);box-shadow:0 0 20px rgba(0,240,240,.1)}
+.detail-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.detail-hdr span{font-size:9px;color:var(--cyan)}
+.detail-hdr button{background:none;border:2px solid var(--border);color:var(--dim);font-family:inherit;font-size:10px;padding:2px 8px;cursor:pointer}
+
+.w-day-hdr{font-size:8px;padding:12px 0 4px;display:flex;align-items:center;gap:6px;color:var(--dim)}
+.l-date{position:sticky;top:120px;background:var(--bg);z-index:2;font-size:8px;padding:10px 0 4px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px;color:var(--dim)}
+
+/* ─── DUTIES ─── */
+.duties-section{margin-top:4px}
+.duties-week-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.duties-week-nav span{font-size:9px}
+.duty-grid{display:grid;grid-template-columns:1fr;gap:6px}
+.duty-day{background:var(--card);border:2px solid var(--border);padding:10px}
+.duty-day-hdr{font-size:12px;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.duty-day-hdr .dd-today{background:var(--green);color:#000;font-size:6px;padding:2px 6px}
+.duty-row{display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid #222244}
+.duty-row:last-child{border-bottom:none}
+.duty-name{flex:1;font-size:12px;color:var(--white)}
+.duty-btn{border:2px solid var(--border);background:var(--card);color:var(--dim);font-family:inherit;font-size:11px;padding:8px 14px;cursor:pointer;transition:all .1s;min-width:70px;text-align:center}
+.duty-btn:hover{border-color:var(--cyan)}
+.duty-btn.andy{border-color:var(--green);color:var(--green);background:rgba(0,240,0,.08);text-shadow:0 0 6px rgba(0,240,0,.3)}
+.duty-btn.julia{border-color:var(--pink);color:var(--pink);background:rgba(240,80,160,.08);text-shadow:0 0 6px rgba(240,80,160,.3)}
+.duty-btn.saving{opacity:.5;pointer-events:none}
+
+.loading{text-align:center;padding:40px;color:var(--cyan);font-size:10px}
+.loading::after{content:'';animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.error-msg{background:#330000;border:2px solid var(--red);padding:12px;font-size:8px;color:var(--red);margin:12px 0}
+
+.pattern{margin-top:16px;padding:12px;background:var(--card);border:2px solid var(--border)}
+.pattern h3{font-size:8px;color:var(--yellow);margin-bottom:8px}
+.pattern .pr{display:flex;gap:8px;margin-bottom:4px;font-size:7px}
+.pattern .pr b{width:28px;color:var(--cyan);flex-shrink:0}
+.pattern .pr span{color:var(--dim)}
+
+.offline-banner{background:#331100;border:2px solid var(--orange);padding:8px;font-size:7px;color:var(--orange);text-align:center;margin-bottom:8px}
+
+@media(max-width:600px){
+  body{font-size:13px}
+  .title{font-size:16px}
+  .sum-card .num{font-size:20px}
+  .av-btn{padding:4px 6px;min-width:44px}
+  .av-btn .av-em{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading" style="padding:80px 20px">LOADING FAM CAL...</div></div>
+<script>
+// ════════════════════════════════════════════════════════
+// CONFIGURATION — UPDATE THIS URL AFTER DEPLOYING YOUR
+// GOOGLE APPS SCRIPT (see setup instructions)
+// ════════════════════════════════════════════════════════
+var API_URL = 'https://script.google.com/macros/s/AKfycbwOubQAwGtbKU6K0DKUsA-Jvlok7a4r6H3wqou4BPb9fJGTz2GitvVVtFNtkAZxVRyEFg/exec';
+// ════════════════════════════════════════════════════════
+
+var AV={e:'\u{1F485}',d:'\u{1F913}',j:'\u{1F483}',a:'\u{1F57A}',b:'\u{1F485}\u{1F913}',f:'\u{1F618}'};
+var CT={
+  af:{l:'AFTER SCHOOL',clr:'#F0A000',bg:'rgba(240,160,0,.15)'},
+  gy:{l:'GYM',clr:'#A000F0',bg:'rgba(160,0,240,.15)'},
+  da:{l:'DANCE',clr:'#F050A0',bg:'rgba(240,80,160,.15)'},
+  sw:{l:'SWIM',clr:'#0000F0',bg:'rgba(0,0,240,.15)'},
+  ch:{l:'CHINESE',clr:'#F00000',bg:'rgba(240,0,0,.15)'},
+  co:{l:'GYM MEET',clr:'#F0F000',bg:'rgba(240,240,0,.15)'},
+  do:{l:'NO SCHOOL',clr:'#F0A000',bg:'rgba(240,160,0,.15)'},
+  tr:{l:'TRAVEL',clr:'#00F0F0',bg:'rgba(0,240,240,.15)'},
+  fm:{l:'FAMILY',clr:'#00F000',bg:'rgba(0,240,0,.15)'}
+};
+var WH={e:{l:'Ella',clr:'#F050A0'},d:{l:'Dylan',clr:'#0000F0'},b:{l:'Both',clr:'#F0F000'},f:{l:'Family',clr:'#A000F0'},a:{l:'Andy',clr:'#00F000'},j:{l:'Julia',clr:'#F050A0'}};
+var DWS=["SUN","MON","TUE","WED","THU","FRI","SAT"];
+var DWFULL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+var MS=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+var DUTY_DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday"];
+
+var view="day",who="all",off=0,sel=null,expanded=null,dutyWeekOff=0;
+var NOW=new Date();
+var events=[],duties={},dutyList=[],isOnline=true,lastFetch=0;
+
+// ─── DATA FETCHING ───
+function fetchAll(cb){
+  var wk=getWeekStr(dutyWeekOff);
+  var url=API_URL+'?action=all&week='+wk;
+  fetch(url).then(function(r){return r.json()}).then(function(data){
+    if(data.error){showError(data.error);return}
+    events=data.calendar||[];
+    duties=data.duties||{};
+    dutyList=data.dutyList||['Ella Dropoff','Ella Pickup','Dylan Dropoff','Dylan Pickup','Dinner','Bedtime Routine'];
+    isOnline=true;
+    lastFetch=Date.now();
+    if(cb)cb();else render();
+  }).catch(function(err){
+    isOnline=false;
+    if(cb)cb();else render();
+  });
+}
+
+function fetchDuties(cb){
+  var wk=getWeekStr(dutyWeekOff);
+  var url=API_URL+'?action=duties&week='+wk;
+  fetch(url).then(function(r){return r.json()}).then(function(data){
+    duties=data||{};
+    if(cb)cb();else render();
+  }).catch(function(){if(cb)cb();else render()});
+}
+
+function saveDuty(day,duty,owner,btnEl){
+  var wk=getWeekStr(dutyWeekOff);
+  if(btnEl)btnEl.classList.add('saving');
+  var url=API_URL+'?action=setDuty&week='+encodeURIComponent(wk)+'&day='+encodeURIComponent(day)+'&duty='+encodeURIComponent(duty)+'&owner='+encodeURIComponent(owner);
+  fetch(url).then(function(r){return r.json()}).then(function(){
+    // Update local state
+    if(!duties.assignments)duties.assignments={};
+    if(!duties.assignments[day])duties.assignments[day]={};
+    duties.assignments[day][duty]=owner;
+    render();
+  }).catch(function(){
+    if(btnEl)btnEl.classList.remove('saving');
+  });
+}
+
+function getWeekStr(offset){
+  var d=new Date(NOW);
+  var dayOfWeek=d.getDay();
+  var diff=d.getDate()-dayOfWeek+(dayOfWeek===0?-6:1); // Monday
+  d.setDate(diff+offset*7);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function getWeekLabel(offset){
+  var d=new Date(NOW);
+  var dayOfWeek=d.getDay();
+  var diff=d.getDate()-dayOfWeek+(dayOfWeek===0?-6:1);
+  var mon=new Date(d);mon.setDate(diff+offset*7);
+  var fri=new Date(mon);fri.setDate(fri.getDate()+4);
+  if(offset===0)return'THIS WEEK';
+  if(offset===1)return'NEXT WEEK';
+  return MS[mon.getMonth()]+' '+mon.getDate()+' - '+MS[fri.getMonth()]+' '+fri.getDate();
+}
+
+// ─── HELPERS ───
+function pd(s){if(!s)return new Date();return s.length===10?new Date(s+"T00:00:00"):new Date(s)}
+function sd(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function ft(s){if(!s||!s.includes(":"))return"";var p=s.split(":");var h=+p[0],m=+p[1];return(h%12||12)+":"+String(m).padStart(2,"0")+(h>=12?"PM":"AM")}
+function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function forDate(date,list){
+  return list.filter(function(ev){
+    var d=pd(ev.t);
+    if(ev.a){var st=new Date(d.getFullYear(),d.getMonth(),d.getDate());var en=ev.te?new Date(pd(ev.te).getFullYear(),pd(ev.te).getMonth(),pd(ev.te).getDate()):new Date(st.getTime()+864e5);var dd=new Date(date.getFullYear(),date.getMonth(),date.getDate());return dd>=st&&dd<en;}
+    return sd(d,date);
+  }).sort(function(a,b){if(a.a&&!b.a)return-1;if(!a.a&&b.a)return 1;return pd(a.t)-pd(b.t)});
+}
+
+function filtered(){return events.filter(function(ev){return who==="all"||ev.p===who})}
+function evId(ev){return ev.t+ev.s}
+
+// ─── RENDER HELPERS ───
+function evCard(ev){
+  var t=CT[ev.c]||CT.fm;
+  var time=ev.a?"ALL DAY":(ev.e&&ev.e.includes(":")?ft(ev.t.slice(11))+" - "+ft(ev.e):"");
+  var loc=ev.loc?" \u00b7 "+esc(ev.loc):"";
+  var isExp=expanded===evId(ev);
+  var h='<div class="ev-card" style="border-left-color:'+t.clr+'" onclick="EXP(\''+evId(ev).replace(/'/g,"\\'")+'\')">';
+  h+='<span class="ev-em">'+(AV[ev.p]||'\u{1F618}')+'</span>';
+  h+='<div class="ev-info"><div class="ev-title">'+esc(ev.s)+'</div><div class="ev-time">'+time+loc+'</div></div>';
+  h+='<span class="ev-tag" style="color:'+t.clr+';border-color:'+t.clr+';background:'+t.bg+'">'+t.l+'</span></div>';
+  if(isExp){
+    h+='<div class="ev-detail">';
+    if(time)h+='<b>TIME:</b> '+time+'<br>';
+    if(ev.loc)h+='<b>LOCATION:</b> '+esc(ev.loc)+'<br>';
+    if(ev.desc)h+='<b>DETAILS:</b><br>'+esc(ev.desc).replace(/\n/g,'<br>')+'<br>';
+    if(ev.n)h+=ev.n.split('\n').map(function(l){return esc(l)}).join('<br>');
+    if(!ev.desc&&!ev.n&&!ev.loc)h+='<b>WHO:</b> '+(WH[ev.p]||WH.f).l;
+    h+='</div>';
+  }
+  return h;
+}
+
+function todaySummary(f){
+  var te=forDate(NOW,f);
+  var el=te.filter(function(e){return e.p==="e"}).length;
+  var dy=te.filter(function(e){return e.p==="d"}).length;
+  return '<div class="summary"><div class="sum-card"><div class="num" style="color:var(--cyan)">'+te.length+'</div><div class="lab">TODAY</div></div><div class="sum-card"><div class="num" style="color:var(--pink)">'+el+'</div><div class="lab">\u{1F485} ELLA</div></div><div class="sum-card"><div class="num" style="color:var(--blue)">'+dy+'</div><div class="lab">\u{1F913} DYLAN</div></div></div>';
+}
+
+function avatarBar(){
+  var ppl=[{k:"all",em:"\u{1F47E}",n:"ALL"},{k:"e",em:"\u{1F485}",n:"ELLA"},{k:"d",em:"\u{1F913}",n:"DYLAN"},{k:"b",em:"\u{1F485}\u{1F913}",n:"BOTH"},{k:"j",em:"\u{1F483}",n:"JULIA"},{k:"a",em:"\u{1F57A}",n:"ANDY"},{k:"f",em:"\u{1F618}",n:"FAM"}];
+  var h='<div class="avatar-bar">';
+  ppl.forEach(function(p){h+='<button class="av-btn'+(who===p.k?" on":"")+'" onclick="W(\''+p.k+'\')"><span class="av-em">'+p.em+'</span><span class="av-name">'+p.n+'</span></button>'});
+  return h+'</div>';
+}
+
+function mChip(ev){
+  var t=CT[ev.c]||CT.fm;
+  return '<span class="m-chip" style="color:'+t.clr+';border-color:'+t.clr+';background:'+t.bg+'"><span class="mc-em">'+(AV[ev.p]||'\u{1F618}')+'</span>'+esc(ev.s)+'</span>';
+}
+
+// ─── DUTIES RENDER ───
+function renderDuties(){
+  var wk=getWeekStr(dutyWeekOff);
+  var assigns=(duties.assignments)||{};
+  var h='<div class="duties-section">';
+  h+='<div class="duties-week-nav"><button class="nav-btn" onclick="DW(-1)">\u25C0</button><span>'+getWeekLabel(dutyWeekOff)+'</span><button class="nav-btn" onclick="DW(1)">\u25B6</button></div>';
+  h+='<div class="duty-grid">';
+  
+  DUTY_DAYS.forEach(function(day){
+    var dayAssigns=assigns[day]||{};
+    var isToday=DWFULL[NOW.getDay()]===day&&dutyWeekOff===0;
+    h+='<div class="duty-day"'+(isToday?' style="border-color:var(--green);box-shadow:0 0 12px rgba(0,240,0,.1)"':'')+'>';
+    h+='<div class="duty-day-hdr">'+(isToday?'<span class="dd-today">\u25BA TODAY</span>':'')+day.toUpperCase()+'</div>';
+    
+    dutyList.forEach(function(duty){
+      var owner=dayAssigns[duty]||'';
+      var andyCls=owner==='Andy'?'andy':'';
+      var juliaCls=owner==='Julia'?'julia':'';
+      
+      h+='<div class="duty-row"><span class="duty-name">'+esc(duty)+'</span>';
+      h+='<button class="duty-btn '+andyCls+'" onclick="SD(\''+day+'\',\''+duty.replace(/'/g,"\\'")+'\',\'Andy\',this)">'+(owner==='Andy'?'\u{1F57A} ANDY':'ANDY')+'</button>';
+      h+='<button class="duty-btn '+juliaCls+'" onclick="SD(\''+day+'\',\''+duty.replace(/'/g,"\\'")+'\',\'Julia\',this)">'+(owner==='Julia'?'\u{1F483} JULIA':'JULIA')+'</button>';
+      h+='</div>';
+    });
+    h+='</div>';
+  });
+  
+  h+='</div></div>';
+  return h;
+}
+
+function showError(msg){
+  document.getElementById('app').innerHTML='<div style="padding:20px"><div class="error-msg">ERROR: '+esc(msg)+'</div><div style="font-size:8px;color:var(--dim);margin-top:12px">Check your Apps Script deployment URL and permissions.</div></div>';
+}
+
+// ─── MAIN RENDER ───
+function render(){
+  var f=filtered();
+  var h='<div class="header"><div class="brand">DUDDLESTON</div><div class="title">FAM CAL</div>';
+  if(!isOnline)h+='<div class="offline-banner">\u26A0 OFFLINE - SHOWING CACHED DATA</div>';
+  h+=todaySummary(f);
+  h+=avatarBar();
+  h+='<div class="toggle">';
+  h+='<button class="'+(view==="day"?"on":"")+'" onclick="V(\'day\')">DAY</button>';
+  h+='<button class="'+(view==="month"?"on":"")+'" onclick="V(\'month\')">MONTH</button>';
+  h+='<button class="'+(view==="week"?"on":"")+'" onclick="V(\'week\')">WEEK</button>';
+  h+='<button class="'+(view==="list"?"on":"")+'" onclick="V(\'list\')">LIST</button>';
+  h+='<button class="'+(view==="duties"?"on":"")+'" onclick="V(\'duties\')">DUTIES</button>';
+  h+='</div></div>';
+
+  var content='<div style="padding:8px 16px 24px">';
+
+  if(view==="day"){
+    var d=new Date(NOW);d.setDate(d.getDate()+off);
+    var evts=forDate(d,f);var isNow=sd(d,NOW);
+    var label=DWS[d.getDay()]+' '+MS[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();
+    content+='<div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u25C0</button><span>'+label+'</span><button class="nav-btn" onclick="N(1)">\u25B6</button></div>';
+    if(isNow)content+='<div style="text-align:center;margin-bottom:10px"><span class="today-badge">\u25BA TODAY \u25C4</span></div>';
+    var noSch=evts.filter(function(e){return e.c==="do"&&(e.s.toLowerCase().includes("no school")||e.s.toLowerCase().includes("recess"))});
+    noSch.forEach(function(e){content+='<div class="noschool-banner">\u26A0 '+esc(e.s)+'</div>'});
+    if(evts.length===0)content+='<div style="text-align:center;padding:40px 0;color:var(--dim)">NO EVENTS</div>';
+    else evts.forEach(function(ev){content+=evCard(ev)});
+  }
+
+  if(view==="month"){
+    var start=new Date(NOW);start.setDate(start.getDate()-start.getDay()+off*14);
+    var days=[];for(var i=0;i<14;i++){var dd=new Date(start);dd.setDate(dd.getDate()+i);days.push(dd)}
+    var last=days[13];
+    content+='<div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u25C0</button><span>'+MS[start.getMonth()]+' '+start.getDate()+' - '+MS[last.getMonth()]+' '+last.getDate()+'</span><button class="nav-btn" onclick="N(1)">\u25B6</button></div>';
+    days.forEach(function(day){
+      var evts=forDate(day,f);var isNow=sd(day,NOW);
+      var noSch=evts.some(function(e){return e.c==="do"&&(e.s.toLowerCase().includes("no school")||e.s.toLowerCase().includes("recess"))});
+      var comp=evts.some(function(e){return e.c==="co"});var isSel=sel&&sd(day,new Date(sel));
+      var cls=["m-day"];if(isSel)cls.push("sel");else if(noSch)cls.push("nosch");else if(comp)cls.push("comp");
+      var nc=isNow?"today":noSch?"nosch":comp?"comp":"";
+      content+='<div class="'+cls.join(" ")+'" onclick="S('+day.getTime()+')"><div class="m-date"><div class="m-dow">'+DWS[day.getDay()]+'</div><div class="m-num '+nc+'">'+day.getDate()+'</div>'+(isNow?'<div class="m-dots"></div>':'')+'</div><div class="m-pills">'+(evts.length===0?'<span class="m-empty">---</span>':'')+evts.map(mChip).join('')+'</div></div>';
+    });
+    if(sel){var sd2=new Date(sel);var se=forDate(sd2,f);if(se.length>0){var lb=DWS[sd2.getDay()]+' '+MS[sd2.getMonth()]+' '+sd2.getDate();content+='<div class="detail"><div class="detail-hdr"><span>'+lb+'</span><button onclick="C()">X</button></div>'+se.map(evCard).join('')+'</div>'}}
+  }
+
+  if(view==="week"){
+    var start=new Date(NOW);start.setDate(start.getDate()-start.getDay()+off*7);
+    var days=[];for(var i=0;i<7;i++){var dd=new Date(start);dd.setDate(dd.getDate()+i);days.push(dd)}
+    content+='<div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u25C0</button><span>'+MS[start.getMonth()]+' '+start.getDate()+' - '+MS[days[6].getMonth()]+' '+days[6].getDate()+'</span><button class="nav-btn" onclick="N(1)">\u25B6</button></div>';
+    days.forEach(function(day){
+      var evts=forDate(day,f);var isNow=sd(day,NOW);
+      content+='<div><div class="w-day-hdr" style="color:'+(isNow?"var(--green)":"var(--dim)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+DWS[day.getDay()]+' '+MS[day.getMonth()]+' '+day.getDate()+(evts.length?' <span style="color:var(--dim)">\u00b7 '+evts.length+'</span>':'')+'</div>'+(evts.length===0?'<div style="font-size:7px;color:#333;padding:4px 0">---</div>':'')+evts.map(evCard).join('')+'</div>';
+    });
+  }
+
+  if(view==="list"){
+    var groups={};f.filter(function(ev){return pd(ev.t)>=NOW}).sort(function(a,b){return pd(a.t)-pd(b.t)}).forEach(function(ev){var d=pd(ev.t);var k=d.toISOString().slice(0,10);if(!groups[k])groups[k]={date:d,events:[]};groups[k].events.push(ev)});
+    var gl=Object.values(groups);
+    var total=f.filter(function(ev){return pd(ev.t)>=NOW}).length;
+    content+='<div style="font-size:8px;color:var(--dim);margin-bottom:8px">'+total+' UPCOMING EVENTS</div>';
+    gl.forEach(function(g){var d=g.date;var isNow=sd(d,NOW);var lb=DWS[d.getDay()]+' '+MS[d.getMonth()]+' '+d.getDate();
+      content+='<div><div class="l-date" style="color:'+(isNow?"var(--green)":"var(--dim)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+lb+' <span style="color:#333">'+g.events.length+'</span></div>'+g.events.map(evCard).join('')+'</div>';
+    });
+  }
+
+  if(view==="duties"){
+    content+=renderDuties();
+  }
+
+  content+='</div>';
+  document.getElementById("app").innerHTML=h+content;
+}
+
+// ─── ACTIONS ───
+window.V=function(v){view=v;off=0;sel=null;expanded=null;render()};
+window.W=function(v){who=v;render()};
+window.N=function(d){off+=d;sel=null;render()};
+window.S=function(ts){sel=sel===ts?null:ts;render()};
+window.C=function(){sel=null;render()};
+window.EXP=function(id){expanded=expanded===id?null:id;render()};
+window.DW=function(d){dutyWeekOff+=d;fetchDuties()};
+window.SD=function(day,duty,owner,btn){
+  // Toggle: if already this owner, clear it
+  var assigns=(duties.assignments||{});
+  var current=(assigns[day]||{})[duty]||'';
+  var newOwner=current===owner?'':owner;
+  saveDuty(day,duty,newOwner,btn);
+};
+
+// Touch swipe
+var tx=0;
+document.addEventListener('touchstart',function(e){tx=e.touches[0].clientX});
+document.addEventListener('touchend',function(e){
+  var dx=e.changedTouches[0].clientX-tx;
+  if(view==="day"&&Math.abs(dx)>60){if(dx<0)N(1);else N(-1)}
+});
+
+// Auto-refresh every 5 minutes
+setInterval(function(){fetchAll()},300000);
+
+// ─── BOOT ───
+if(API_URL==='YOUR_APPS_SCRIPT_URL_HERE'){
+  document.getElementById('app').innerHTML='<div style="padding:20px"><div class="error-msg">SETUP NEEDED</div><div style="font-size:8px;color:var(--dim);margin-top:12px;line-height:2">1. Deploy the Google Apps Script<br>2. Copy the deployment URL<br>3. Replace YOUR_APPS_SCRIPT_URL_HERE at the top of this file<br>4. Refresh</div></div>';
+}else{
+  fetchAll();
+}
+</script>
+</body>
+</html>
