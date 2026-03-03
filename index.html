@@ -27,7 +27,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .sum-card .num{font-size:20px;line-height:1.2}
 .sum-card .lab{font-size:9px;color:var(--dim);margin-top:4px}
 
-.avatar-bar{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
+.avatar-bar{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap;justify-content:center}
 .av-btn{display:flex;flex-direction:column;align-items:center;gap:4px;border:2px solid var(--border);background:var(--card);padding:10px 12px;cursor:pointer;transition:all .1s;min-width:65px}
 .av-btn.on{border-color:var(--cyan);background:#16213e;box-shadow:0 0 10px rgba(0,240,240,.2)}
 .av-btn .av-em{font-size:36px;line-height:1;font-family:sans-serif}
@@ -38,6 +38,20 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .toggle button{flex:1;padding:10px 0;border:none;cursor:pointer;font-family:inherit;font-size:10px;background:var(--card);color:var(--dim);transition:all .1s;border-right:2px solid var(--border)}
 .toggle button:last-child{border-right:none}
 .toggle button.on{background:var(--purple);color:#fff;text-shadow:0 0 8px rgba(160,0,240,.5)}
+.tools-toggle{margin-top:6px;border-color:var(--yellow)}
+.tools-toggle button{background:#1a1a2e;border-color:rgba(240,240,0,.2)}
+.tools-toggle button.on.duties-btn{background:var(--orange);color:#000;text-shadow:none}
+.tools-toggle button.on.school-btn{background:var(--cyan);color:#000;text-shadow:none}
+.school-card{border:2px solid var(--border);background:var(--card);padding:12px;margin-bottom:8px}
+.school-card .school-kid{font-size:12px;color:var(--cyan);margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.school-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.school-item:last-child{border-bottom:none}
+.school-item .school-subj{font-size:11px;color:var(--white)}
+.school-item .school-type{font-size:9px;padding:3px 8px;border:1px solid}
+.school-item .school-date{font-size:9px;color:var(--dim)}
+.school-empty{font-size:10px;color:var(--dim);text-align:center;padding:20px}
+.school-add{display:block;width:100%;padding:10px;margin-top:8px;border:2px dashed var(--border);background:transparent;color:var(--dim);font-family:inherit;font-size:10px;cursor:pointer;text-align:center}
+.school-add:hover{border-color:var(--cyan);color:var(--cyan)}
 
 .nav-row{display:flex;justify-content:space-between;align-items:center;margin:4px 0 12px}
 .nav-row span{font-size:11px;color:var(--white)}
@@ -81,7 +95,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .detail-hdr span{font-size:9px;color:var(--cyan)}
 .detail-hdr button{background:none;border:2px solid var(--border);color:var(--dim);font-family:inherit;font-size:10px;padding:2px 8px;cursor:pointer}
 
-.w-day-hdr{font-size:8px;padding:12px 0 4px;display:flex;align-items:center;gap:6px;color:var(--dim)}
+.w-day-hdr{font-size:12px;padding:14px 0 6px;display:flex;align-items:center;gap:6px;color:var(--yellow)}
 .l-date{position:sticky;top:120px;background:var(--bg);z-index:2;font-size:12px;padding:14px 0 6px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px;color:var(--yellow)}
 
 /* ─── DUTIES ─── */
@@ -324,10 +338,12 @@ function render(){
   h+=avatarBar();
   h+='<div class="toggle">';
   h+='<button class="'+(view==="day"?"on":"")+'" onclick="V(\'day\')">DAY</button>';
-  h+='<button class="'+(view==="month"?"on":"")+'" onclick="V(\'month\')">MONTH</button>';
   h+='<button class="'+(view==="week"?"on":"")+'" onclick="V(\'week\')">WEEK</button>';
   h+='<button class="'+(view==="list"?"on":"")+'" onclick="V(\'list\')">LIST</button>';
-  h+='<button class="'+(view==="duties"?"on":"")+'" onclick="V(\'duties\')">DUTIES</button>';
+  h+='</div>';
+  h+='<div class="toggle tools-toggle">';
+  h+='<button class="'+(view==="duties"?"on duties-btn":"")+'" onclick="V(\'duties\')">📋 DUTIES</button>';
+  h+='<button class="'+(view==="school"?"on school-btn":"")+'" onclick="V(\'school\')">📚 SCHOOL</button>';
   h+='</div></div>';
 
   var content='<div style="padding:8px 16px 24px">';
@@ -361,12 +377,12 @@ function render(){
   }
 
   if(view==="week"){
-    var start=new Date(NOW);start.setDate(start.getDate()-start.getDay()+off*7);
+    var start=new Date(NOW);start.setDate(start.getDate()+off*7);
     var days=[];for(var i=0;i<7;i++){var dd=new Date(start);dd.setDate(dd.getDate()+i);days.push(dd)}
-    content+='<div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u25C0</button><span>'+MS[start.getMonth()]+' '+start.getDate()+' - '+MS[days[6].getMonth()]+' '+days[6].getDate()+'</span><button class="nav-btn" onclick="N(1)">\u25B6</button></div>';
+    content+='<div class="nav-row"><button class="nav-btn" onclick="N(-1)">\u25C0</button><span>'+MS[start.getMonth()]+' '+start.getDate()+' \u2013 '+MS[days[6].getMonth()]+' '+days[6].getDate()+'</span><button class="nav-btn" onclick="N(1)">\u25B6</button></div>';
     days.forEach(function(day){
       var evts=forDate(day,f);var isNow=sd(day,NOW);
-      content+='<div><div class="w-day-hdr" style="color:'+(isNow?"var(--green)":"var(--dim)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+DWS[day.getDay()]+' '+MS[day.getMonth()]+' '+day.getDate()+(evts.length?' <span style="color:var(--dim)">\u00b7 '+evts.length+'</span>':'')+'</div>'+(evts.length===0?'<div style="font-size:7px;color:#333;padding:4px 0">---</div>':'')+evts.map(evCard).join('')+'</div>';
+      content+='<div><div class="w-day-hdr" style="color:'+(isNow?"var(--green)":"var(--yellow)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+DWS[day.getDay()]+' '+MS[day.getMonth()]+' '+day.getDate()+'</div>'+(evts.length===0?'<div style="font-size:8px;color:#333;padding:4px 0">---</div>':'')+evts.map(evCard).join('')+'</div>';
     });
   }
 
@@ -384,8 +400,71 @@ function render(){
     content+=renderDuties();
   }
 
+  if(view==="school"){
+    content+=renderSchool();
+  }
+
   content+='</div>';
   document.getElementById("app").innerHTML=h+content;
+}
+
+// ─── SCHOOL ───
+var schoolItems = JSON.parse(localStorage.getItem('famcal_school')||'[]');
+
+function saveSchool(){
+  localStorage.setItem('famcal_school', JSON.stringify(schoolItems));
+}
+
+function renderSchool(){
+  var h='<div style="padding:4px 0">';
+  h+='<div class="nav-row"><span>📚 UPCOMING TESTS & QUIZZES</span></div>';
+  
+  // Ella section
+  h+='<div class="school-card" style="border-left:4px solid var(--pink)">';
+  h+='<div class="school-kid">💅 ELLA</div>';
+  var ellaItems=schoolItems.filter(function(s){return s.kid==="ella"}).sort(function(a,b){return a.date>b.date?1:-1});
+  if(ellaItems.length===0){
+    h+='<div class="school-empty">No upcoming tests or quizzes</div>';
+  } else {
+    ellaItems.forEach(function(item,idx){
+      var origIdx=schoolItems.indexOf(item);
+      var typeClr=item.type==="test"?"var(--orange)":item.type==="quiz"?"var(--cyan)":"var(--green)";
+      h+='<div class="school-item">';
+      h+='<div><div class="school-subj">'+esc(item.subject)+'</div>';
+      h+='<div class="school-date">'+esc(item.date)+(item.notes?' · '+esc(item.notes):'')+'</div></div>';
+      h+='<div style="display:flex;align-items:center;gap:8px">';
+      h+='<span class="school-type" style="color:'+typeClr+';border-color:'+typeClr+'">'+item.type.toUpperCase()+'</span>';
+      h+='<span style="cursor:pointer;font-size:14px" onclick="SDEL('+origIdx+')">✕</span>';
+      h+='</div></div>';
+    });
+  }
+  h+='<button class="school-add" onclick="SADD(\'ella\')">+ ADD FOR ELLA</button>';
+  h+='</div>';
+  
+  // Dylan section
+  h+='<div class="school-card" style="border-left:4px solid var(--blue)">';
+  h+='<div class="school-kid">🤓 DYLAN</div>';
+  var dylanItems=schoolItems.filter(function(s){return s.kid==="dylan"}).sort(function(a,b){return a.date>b.date?1:-1});
+  if(dylanItems.length===0){
+    h+='<div class="school-empty">No upcoming tests or quizzes</div>';
+  } else {
+    dylanItems.forEach(function(item,idx){
+      var origIdx=schoolItems.indexOf(item);
+      var typeClr=item.type==="test"?"var(--orange)":item.type==="quiz"?"var(--cyan)":"var(--green)";
+      h+='<div class="school-item">';
+      h+='<div><div class="school-subj">'+esc(item.subject)+'</div>';
+      h+='<div class="school-date">'+esc(item.date)+(item.notes?' · '+esc(item.notes):'')+'</div></div>';
+      h+='<div style="display:flex;align-items:center;gap:8px">';
+      h+='<span class="school-type" style="color:'+typeClr+';border-color:'+typeClr+'">'+item.type.toUpperCase()+'</span>';
+      h+='<span style="cursor:pointer;font-size:14px" onclick="SDEL('+origIdx+')">✕</span>';
+      h+='</div></div>';
+    });
+  }
+  h+='<button class="school-add" onclick="SADD(\'dylan\')">+ ADD FOR DYLAN</button>';
+  h+='</div>';
+  
+  h+='</div>';
+  return h;
 }
 
 // ─── ACTIONS ───
@@ -402,6 +481,27 @@ window.SD=function(day,duty,owner,btn){
   var current=(assigns[day]||{})[duty]||'';
   var newOwner=current===owner?'':owner;
   saveDuty(day,duty,newOwner,btn);
+};
+window.SADD=function(kid){
+  var subject=prompt('Subject (e.g. Math, Science, ELA):');
+  if(!subject)return;
+  var type=prompt('Type: test, quiz, or project?','quiz');
+  if(!type)return;
+  type=type.toLowerCase().trim();
+  if(['test','quiz','project'].indexOf(type)===-1)type='quiz';
+  var date=prompt('Date (e.g. Mar 10, 2026):');
+  if(!date)return;
+  var notes=prompt('Notes (optional):','');
+  schoolItems.push({kid:kid,subject:subject,type:type,date:date,notes:notes||''});
+  saveSchool();
+  render();
+};
+window.SDEL=function(idx){
+  if(confirm('Remove this item?')){
+    schoolItems.splice(idx,1);
+    saveSchool();
+    render();
+  }
 };
 
 // Touch swipe
