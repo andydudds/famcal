@@ -64,9 +64,9 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .m-day.sel{border-color:var(--cyan);background:#16213e;box-shadow:0 0 12px rgba(0,240,240,.1)}
 .m-day.nosch{background:rgba(240,160,0,.05);border-color:rgba(240,160,0,.2)}
 .m-day.comp{background:rgba(240,80,160,.05);border-color:rgba(240,80,160,.2)}
-.m-day .m-date{width:44px;flex-shrink:0;text-align:center}
-.m-day .m-dow{font-size:7px;color:var(--dim)}
-.m-day .m-num{font-size:16px;line-height:22px;color:var(--white)}
+.m-day .m-date{width:56px;flex-shrink:0;text-align:center}
+.m-day .m-dow{font-size:10px;color:var(--dim)}
+.m-day .m-num{font-size:22px;line-height:28px;color:var(--white)}
 .m-day .m-num.today{color:var(--green);text-shadow:0 0 10px rgba(0,240,0,.4)}
 .m-day .m-num.nosch{color:var(--orange);text-shadow:0 0 10px rgba(240,160,0,.4)}
 .m-day .m-num.comp{color:var(--pink);text-shadow:0 0 10px rgba(240,80,160,.4)}
@@ -82,7 +82,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .detail-hdr button{background:none;border:2px solid var(--border);color:var(--dim);font-family:inherit;font-size:10px;padding:2px 8px;cursor:pointer}
 
 .w-day-hdr{font-size:8px;padding:12px 0 4px;display:flex;align-items:center;gap:6px;color:var(--dim)}
-.l-date{position:sticky;top:120px;background:var(--bg);z-index:2;font-size:8px;padding:10px 0 4px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px;color:var(--dim)}
+.l-date{position:sticky;top:120px;background:var(--bg);z-index:2;font-size:12px;padding:14px 0 6px;border-bottom:2px solid var(--border);display:flex;align-items:center;gap:6px;color:var(--yellow)}
 
 /* ─── DUTIES ─── */
 .duties-section{margin-top:4px}
@@ -247,7 +247,11 @@ function evCard(ev){
     h+='<div class="ev-detail">';
     if(time)h+='<b>TIME:</b> '+time+'<br>';
     if(ev.loc)h+='<b>LOCATION:</b> '+esc(ev.loc)+'<br>';
-    if(ev.desc)h+='<b>DETAILS:</b><br>'+esc(ev.desc).replace(/\n/g,'<br>')+'<br>';
+    if(ev.desc){
+      // Strip HTML tags and clean up description
+      var cleanDesc = ev.desc.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\n{3,}/g,'\n\n').trim();
+      h+='<b>DETAILS:</b><br>'+esc(cleanDesc).replace(/\n/g,'<br>')+'<br>';
+    }
     if(ev.n)h+=ev.n.split('\n').map(function(l){return esc(l)}).join('<br>');
     if(!ev.desc&&!ev.n&&!ev.loc)h+='<b>WHO:</b> '+(WH[ev.p]||WH.f).l;
     h+='</div>';
@@ -372,7 +376,7 @@ function render(){
     var total=f.filter(function(ev){return pd(ev.t)>=NOW}).length;
     content+='<div style="font-size:8px;color:var(--dim);margin-bottom:8px">'+total+' UPCOMING EVENTS</div>';
     gl.forEach(function(g){var d=g.date;var isNow=sd(d,NOW);var lb=DWS[d.getDay()]+' '+MS[d.getMonth()]+' '+d.getDate();
-      content+='<div><div class="l-date" style="color:'+(isNow?"var(--green)":"var(--dim)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+lb+' <span style="color:#333">'+g.events.length+'</span></div>'+g.events.map(evCard).join('')+'</div>';
+      content+='<div><div class="l-date" style="color:'+(isNow?"var(--green)":"var(--yellow)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+lb+'</div>'+g.events.map(evCard).join('')+'</div>';
     });
   }
 
