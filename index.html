@@ -28,10 +28,10 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .sum-card .lab{font-size:9px;color:var(--dim);margin-top:4px}
 
 .avatar-bar{display:flex;gap:4px;margin-bottom:12px;flex-wrap:wrap}
-.av-btn{display:flex;flex-direction:column;align-items:center;gap:3px;border:2px solid var(--border);background:var(--card);padding:6px 8px;cursor:pointer;transition:all .1s;min-width:52px}
+.av-btn{display:flex;flex-direction:column;align-items:center;gap:4px;border:2px solid var(--border);background:var(--card);padding:10px 12px;cursor:pointer;transition:all .1s;min-width:65px}
 .av-btn.on{border-color:var(--cyan);background:#16213e;box-shadow:0 0 10px rgba(0,240,240,.2)}
-.av-btn .av-em{font-size:20px;line-height:1;font-family:sans-serif}
-.av-btn .av-name{font-size:8px;color:var(--dim)}
+.av-btn .av-em{font-size:36px;line-height:1;font-family:sans-serif}
+.av-btn .av-name{font-size:12px;color:var(--dim)}
 .av-btn.on .av-name{color:var(--cyan)}
 
 .toggle{display:flex;border:2px solid var(--border);margin-bottom:10px}
@@ -185,15 +185,15 @@ function fetchDuties(cb){
 function saveDuty(day,duty,owner,btnEl){
   var wk=getWeekStr(dutyWeekOff);
   if(btnEl)btnEl.classList.add('saving');
+  // Update local state IMMEDIATELY so UI reflects change
+  if(!duties.assignments)duties.assignments={};
+  if(!duties.assignments[day])duties.assignments[day]={};
+  duties.assignments[day][duty]=owner;
+  render();
+  // Then save to sheet in background (fire and forget)
   var url=API_URL+'?action=setDuty&week='+encodeURIComponent(wk)+'&day='+encodeURIComponent(day)+'&duty='+encodeURIComponent(duty)+'&owner='+encodeURIComponent(owner);
-  fetch(url).then(function(r){return r.json()}).then(function(){
-    // Update local state
-    if(!duties.assignments)duties.assignments={};
-    if(!duties.assignments[day])duties.assignments[day]={};
-    duties.assignments[day][duty]=owner;
-    render();
-  }).catch(function(){
-    if(btnEl)btnEl.classList.remove('saving');
+  fetch(url).then(function(r){return r.json()}).catch(function(err){
+    console.log('Save error:',err);
   });
 }
 
@@ -301,7 +301,9 @@ function renderDuties(){
     h+='</div>';
   });
   
-  h+='</div></div>';
+  h+='</div>';
+  h+='<div style="text-align:center;margin-top:12px"><a href="https://docs.google.com/spreadsheets/d/1TM6qiPBULYnG6dHV9Ni_14clj5CgHoMHfrkM2A_RO08/edit" target="_blank" style="font-size:8px;color:var(--dim);text-decoration:none;font-family:inherit">📋 VIEW SHEET</a></div>';
+  h+='</div>';
   return h;
 }
 
@@ -406,8 +408,13 @@ document.addEventListener('touchend',function(e){
   if(view==="day"&&Math.abs(dx)>60){if(dx<0)N(1);else N(-1)}
 });
 
-// Auto-refresh every 5 minutes
-setInterval(function(){fetchAll()},300000);
+// Auto-refresh calendar only every 5 minutes (don't touch duties)
+setInterval(function(){
+  var url=API_URL+'?action=calendar';
+  fetch(url).then(function(r){return r.json()}).then(function(data){
+    if(!data.error){events=data;isOnline=true;render()}
+  }).catch(function(){});
+},300000);
 
 // ─── BOOT ───
 if(API_URL==='YOUR_APPS_SCRIPT_URL_HERE'){
