@@ -299,7 +299,21 @@ function evId(ev){return ev.t+ev.s}
 // ─── RENDER HELPERS ───
 function evCard(ev){
   var t=CT[ev.c]||CT.fm;
-  var time=ev.a?"ALL DAY":(ev.e&&ev.e.includes(":")?ft(ev.t.slice(11))+" - "+ft(ev.e):"");
+  var isAllDay=ev.a;
+  var time='';
+  if(isAllDay){
+    // Show date range for multi-day events
+    if(ev.te){
+      var st=pd(ev.t);var en=new Date(pd(ev.te).getTime()-864e5);// end is exclusive
+      var stLabel=MS[st.getMonth()]+' '+st.getDate();
+      var enLabel=MS[en.getMonth()]+' '+en.getDate();
+      time=stLabel+' \u2013 '+enLabel;
+    } else {
+      time='ALL DAY';
+    }
+  } else {
+    time=(ev.e&&ev.e.includes(":"))?ft(ev.t.slice(11))+" \u2013 "+ft(ev.e):"";
+  }
   var loc=ev.loc?" \u00b7 "+esc(ev.loc):"";
   var isExp=expanded===evId(ev);
   var h='<div class="ev-card" style="border-left-color:'+t.clr+'" onclick="EXP(\''+evId(ev).replace(/'/g,"\\'")+'\')">';
@@ -308,10 +322,9 @@ function evCard(ev){
   h+='<span class="ev-tag" style="color:'+t.clr+';border-color:'+t.clr+';background:'+t.bg+'">'+t.l+'</span></div>';
   if(isExp){
     h+='<div class="ev-detail">';
-    if(time)h+='<b>TIME:</b> '+time+'<br>';
+    if(time)h+='<b>WHEN:</b> '+time+'<br>';
     if(ev.loc)h+='<b>LOCATION:</b> '+esc(ev.loc)+'<br>';
     if(ev.desc){
-      // Strip HTML tags and clean up description
       var cleanDesc = ev.desc.replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ').replace(/\n{3,}/g,'\n\n').trim();
       h+='<b>DETAILS:</b><br>'+esc(cleanDesc).replace(/\n/g,'<br>')+'<br>';
     }
