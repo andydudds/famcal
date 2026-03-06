@@ -13,7 +13,7 @@
   --cyan:#00F0F0;--yellow:#F0F000;--purple:#A000F0;
   --green:#00F000;--red:#F00000;--orange:#F0A000;
   --blue:#0000F0;--pink:#F050A0;--white:#e0e0e0;
-  --dim:#555577;
+  --dim:#9999bb;
 }
 body{font-family:'Press Start 2P',monospace;background:var(--bg);color:var(--white);max-width:900px;margin:0 auto;min-height:100vh;font-size:14px;-webkit-tap-highlight-color:transparent}
 body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px);pointer-events:none;z-index:999}
@@ -127,6 +127,33 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .pattern .pr span{color:var(--dim)}
 
 .offline-banner{background:#331100;border:2px solid var(--orange);padding:8px;font-size:7px;color:var(--orange);text-align:center;margin-bottom:8px}
+.home-screen{padding:16px 0 24px}
+.home-greeting{font-size:13px;color:var(--white);margin-bottom:20px;text-align:center}
+.home-tiles{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.home-tile{background:var(--card);border:3px solid var(--border);padding:20px 12px;cursor:pointer;transition:all .1s;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px}
+.home-tile:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,240,240,.15)}
+.home-tile:active{transform:scale(.97)}
+.home-tile.cal{border-color:rgba(0,240,0,.3)}
+.home-tile.cal:hover{border-color:var(--green);box-shadow:0 0 16px rgba(0,240,0,.15)}
+.home-tile.duties{border-color:rgba(240,160,0,.3)}
+.home-tile.duties:hover{border-color:var(--orange);box-shadow:0 0 16px rgba(240,160,0,.15)}
+.home-tile.school{border-color:rgba(0,240,240,.3)}
+.home-tile.school:hover{border-color:var(--cyan);box-shadow:0 0 16px rgba(0,240,240,.15)}
+.home-tile.search-tile{border-color:rgba(160,0,240,.3);grid-column:1/-1}
+.home-tile.search-tile:hover{border-color:var(--purple);box-shadow:0 0 16px rgba(160,0,240,.15)}
+.home-tile-em{font-size:36px;font-family:sans-serif;line-height:1}
+.home-tile-label{font-size:11px;color:var(--white)}
+.home-tile-sub{font-size:8px;color:var(--dim)}
+.home-today{background:var(--card);border:2px solid var(--border);padding:12px;margin-bottom:10px}
+.home-today-hdr{font-size:8px;color:var(--cyan);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.home-next{background:var(--card);border:2px solid var(--border);padding:12px}
+.search-wrap{position:relative;margin-bottom:10px}
+.search-input{width:100%;background:var(--card);border:2px solid var(--border);color:var(--white);font-family:'Press Start 2P',monospace;font-size:10px;padding:10px 36px 10px 12px;outline:none;transition:border-color .1s}
+.search-input:focus{border-color:var(--cyan)}
+.search-input::placeholder{color:var(--dim)}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--dim);font-size:14px;cursor:pointer;font-family:inherit;padding:0;line-height:1}
+.search-clear:hover{color:var(--cyan)}
+.search-results-label{font-size:8px;color:var(--dim);margin-bottom:8px}
 
 @media(max-width:600px){
   body{font-size:13px}
@@ -165,7 +192,21 @@ var DWFULL=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturda
 var MS=["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 var DUTY_DAYS=["Monday","Tuesday","Wednesday","Thursday","Friday"];
 
-var view="day",who="all",off=0,sel=null,expanded=null,dutyWeekOff=0;
+var view="home",who="all",off=0,sel=null,expanded=null,dutyWeekOff=0,searchQ="";
+
+// ─── SESSION LOGIC: home screen if >15 mins since last visit ───
+(function(){
+  var TIMEOUT=15*60*1000;
+  var last=localStorage.getItem('famcal_lastvisit');
+  var lastView=localStorage.getItem('famcal_lastview')||'home';
+  var now=Date.now();
+  if(last&&(now-parseInt(last))<TIMEOUT&&lastView&&lastView!=='home'){
+    view=lastView;
+  } else {
+    view='home';
+  }
+  localStorage.setItem('famcal_lastvisit',now);
+})();
 var NOW=new Date();
 var events=[],duties={},dutyList=[],isOnline=true,lastFetch=0;
 
@@ -244,7 +285,15 @@ function forDate(date,list){
   }).sort(function(a,b){if(a.a&&!b.a)return-1;if(!a.a&&b.a)return 1;return pd(a.t)-pd(b.t)});
 }
 
-function filtered(){return events.filter(function(ev){return who==="all"||ev.p===who})}
+function filtered(){
+  return events.filter(function(ev){
+    var matchWho=who==="all"||ev.p===who;
+    if(!matchWho)return false;
+    if(!searchQ)return true;
+    var q=searchQ.toLowerCase();
+    return (ev.s||'').toLowerCase().includes(q)||(ev.loc||'').toLowerCase().includes(q)||(ev.desc||'').toLowerCase().includes(q);
+  });
+}
 function evId(ev){return ev.t+ev.s}
 
 // ─── RENDER HELPERS ───
@@ -331,22 +380,69 @@ function showError(msg){
 
 // ─── MAIN RENDER ───
 function render(){
+  localStorage.setItem('famcal_lastview', view);
   var f=filtered();
   var h='<div class="header"><div class="brand">DUDDLESTON</div><div class="title">FAM CAL</div>';
   if(!isOnline)h+='<div class="offline-banner">\u26A0 OFFLINE - SHOWING CACHED DATA</div>';
-  h+=todaySummary(f);
-  h+=avatarBar();
-  h+='<div class="toggle">';
-  h+='<button class="'+(view==="day"?"on":"")+'" onclick="V(\'day\')">DAY</button>';
-  h+='<button class="'+(view==="week"?"on":"")+'" onclick="V(\'week\')">WEEK</button>';
-  h+='<button class="'+(view==="list"?"on":"")+'" onclick="V(\'list\')">LIST</button>';
+
+  if(view!=='home'){
+    h+=todaySummary(f);
+    h+=avatarBar();
+    h+='<div style="display:flex;gap:6px;margin-bottom:10px"><button class="nav-btn" style="font-size:9px;padding:6px 10px;border-color:var(--dim);color:var(--dim)" onclick="HOME()">🏠 HOME</button><div style="flex:1"><div class="toggle" style="margin-bottom:0">';
+    h+='<button class="'+(view==="day"?"on":"")+'" onclick="V(\'day\')">DAY</button>';
+    h+='<button class="'+(view==="week"?"on":"")+'" onclick="V(\'week\')">WEEK</button>';
+    h+='<button class="'+(view==="list"?"on":"")+'" onclick="V(\'list\')">LIST</button>';
+    h+='</div></div></div>';
+    h+='<div class="toggle tools-toggle">';
+    h+='<button class="'+(view==="duties"?"on duties-btn":"")+'" onclick="V(\'duties\')">📋 DUTIES</button>';
+    h+='<button class="'+(view==="school"?"on school-btn":"")+'" onclick="V(\'school\')">📚 SCHOOL</button>';
+    h+='</div>';
+    h+='<div class="search-wrap"><input class="search-input" type="text" placeholder="🔍 SEARCH EVENTS..." value="'+esc(searchQ)+'" oninput="SQ(this.value)" id="search-input">'+(searchQ?'<button class="search-clear" onclick="SQ(\'\')">✕</button>':'')+'</div>';
+  } else {
+    h+='<div style="font-size:8px;color:var(--dim);text-align:center;padding:4px 0">'+MS[NOW.getMonth()]+' '+NOW.getDate()+', '+NOW.getFullYear()+'</div>';
+  }
+
   h+='</div>';
-  h+='<div class="toggle tools-toggle">';
-  h+='<button class="'+(view==="duties"?"on duties-btn":"")+'" onclick="V(\'duties\')">📋 DUTIES</button>';
-  h+='<button class="'+(view==="school"?"on school-btn":"")+'" onclick="V(\'school\')">📚 SCHOOL</button>';
-  h+='</div></div>';
 
   var content='<div style="padding:8px 16px 24px">';
+
+  if(view==="home"){
+    var todayEvts=forDate(NOW,events);
+    var nextEvts=events.filter(function(ev){return pd(ev.t)>NOW}).sort(function(a,b){return pd(a.t)-pd(b.t)}).slice(0,3);
+    var greetHour=NOW.getHours();
+    var greet=greetHour<12?'GOOD MORNING':'GOOD AFTERNOON';
+    content+='<div class="home-screen">';
+    content+='<div class="home-greeting">'+greet+', DUDDLESTONS 👋</div>';
+
+    // Today's events preview
+    content+='<div class="home-today">';
+    content+='<div class="home-today-hdr">▶ TODAY · '+todayEvts.length+' EVENT'+(todayEvts.length!==1?'S':'')+'</div>';
+    if(todayEvts.length===0){
+      content+='<div style="font-size:9px;color:var(--dim);text-align:center;padding:8px 0">NO EVENTS TODAY</div>';
+    } else {
+      todayEvts.slice(0,3).forEach(function(ev){
+        var t=CT[ev.c]||CT.fm;
+        var time=ev.a?'ALL DAY':ft(ev.t.slice(11));
+        content+='<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #222244">';
+        content+='<span style="font-family:sans-serif;font-size:14px">'+(AV[ev.p]||'🌸')+'</span>';
+        content+='<div style="flex:1;min-width:0"><div style="font-size:10px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(ev.s)+'</div>';
+        content+='<div style="font-size:8px;color:var(--dim)">'+time+'</div></div>';
+        content+='<span style="font-size:8px;padding:2px 6px;border:1px solid '+t.clr+';color:'+t.clr+'">'+t.l+'</span>';
+        content+='</div>';
+      });
+      if(todayEvts.length>3)content+='<div style="font-size:8px;color:var(--dim);text-align:center;padding:6px 0">+' +(todayEvts.length-3)+' MORE</div>';
+    }
+    content+='</div>';
+
+    // Nav tiles
+    content+='<div class="home-tiles">';
+    content+='<div class="home-tile cal" onclick="V(\'day\')"><span class="home-tile-em">📅</span><span class="home-tile-label">CALENDAR</span><span class="home-tile-sub">DAY · WEEK · LIST</span></div>';
+    content+='<div class="home-tile duties" onclick="V(\'duties\')"><span class="home-tile-em">📋</span><span class="home-tile-label">DUTIES</span><span class="home-tile-sub">WHO DOES WHAT</span></div>';
+    content+='<div class="home-tile school" onclick="V(\'school\')"><span class="home-tile-em">📚</span><span class="home-tile-label">SCHOOL</span><span class="home-tile-sub">TESTS & QUIZZES</span></div>';
+    content+='<div class="home-tile search-tile" onclick="V(\'list\');setTimeout(function(){var i=document.getElementById(\'search-input\');if(i)i.focus()},50)"><span class="home-tile-em">🔍</span><span class="home-tile-label">SEARCH EVENTS</span><span class="home-tile-sub">FIND ANYTHING FAST</span></div>';
+    content+='</div>';
+    content+='</div>';
+  }
 
   if(view==="day"){
     var d=new Date(NOW);d.setDate(d.getDate()+off);
@@ -387,10 +483,18 @@ function render(){
   }
 
   if(view==="list"){
-    var groups={};f.filter(function(ev){return pd(ev.t)>=NOW}).sort(function(a,b){return pd(a.t)-pd(b.t)}).forEach(function(ev){var d=pd(ev.t);var k=d.toISOString().slice(0,10);if(!groups[k])groups[k]={date:d,events:[]};groups[k].events.push(ev)});
+    var groups={};
+    var listEvts=searchQ
+      ? f.slice().sort(function(a,b){return pd(a.t)-pd(b.t)})
+      : f.filter(function(ev){return pd(ev.t)>=NOW}).sort(function(a,b){return pd(a.t)-pd(b.t)});
+    listEvts.forEach(function(ev){var d=pd(ev.t);var k=d.toISOString().slice(0,10);if(!groups[k])groups[k]={date:d,events:[]};groups[k].events.push(ev)});
     var gl=Object.values(groups);
-    var total=f.filter(function(ev){return pd(ev.t)>=NOW}).length;
-    content+='<div style="font-size:8px;color:var(--dim);margin-bottom:8px">'+total+' UPCOMING EVENTS</div>';
+    if(searchQ){
+      content+='<div style="font-size:8px;color:var(--cyan);margin-bottom:8px">🔍 '+listEvts.length+' RESULT'+(listEvts.length!==1?'S':'')+' FOR "'+esc(searchQ)+'"</div>';
+    } else {
+      content+='<div style="font-size:8px;color:var(--dim);margin-bottom:8px">'+listEvts.length+' UPCOMING EVENTS</div>';
+    }
+    if(gl.length===0)content+='<div style="text-align:center;padding:40px 0;color:var(--dim)">NO EVENTS FOUND</div>';
     gl.forEach(function(g){var d=g.date;var isNow=sd(d,NOW);var lb=DWS[d.getDay()]+' '+MS[d.getMonth()]+' '+d.getDate();
       content+='<div><div class="l-date" style="color:'+(isNow?"var(--green)":"var(--yellow)")+'">'+(isNow?'<span class="today-badge">\u25BA TODAY</span>':'')+lb+'</div>'+g.events.map(evCard).join('')+'</div>';
     });
@@ -468,13 +572,22 @@ function renderSchool(){
 }
 
 // ─── ACTIONS ───
-window.V=function(v){view=v;off=0;sel=null;expanded=null;render()};
+window.V=function(v){view=v;off=0;sel=null;expanded=null;searchQ='';localStorage.setItem('famcal_lastview',v);render()};
+window.HOME=function(){view='home';render()};
 window.W=function(v){who=v;render()};
 window.N=function(d){off+=d;sel=null;render()};
 window.S=function(ts){sel=sel===ts?null:ts;render()};
 window.C=function(){sel=null;render()};
 window.EXP=function(id){expanded=expanded===id?null:id;render()};
 window.DW=function(d){dutyWeekOff+=d;fetchDuties()};
+window.SQ=function(q){
+  searchQ=q;
+  if(q&&view!=="list")view="list";
+  render();
+  // Keep focus on search input after re-render
+  var inp=document.getElementById('search-input');
+  if(inp){inp.focus();inp.setSelectionRange(inp.value.length,inp.value.length);}
+};
 window.SD=function(day,duty,owner,btn){
   // Toggle: if already this owner, clear it
   var assigns=(duties.assignments||{});
